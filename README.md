@@ -1,3 +1,109 @@
-# AI_Writing_Asisatant_platform
+# Xujian Story Studio
 
-### 此为Codex辅助创作的一个AI长篇小说创作平台，用于测试AI在长篇故事中的理解和生成能力。
+A local, single-user AI platform for writing long-form fiction. The frontend uses HTML/CSS/JavaScript, and the backend uses Node.js and SQLite. No third-party npm dependencies are required.
+
+## Getting Started
+
+1. Install **Node.js 24 or later**. Development and testing used version 24.14.1.
+2. Extract the entire application folder, then double-click `start.cmd` on Windows. Alternatively, run the following command from the application directory:
+
+   ```powershell
+   npm start
+   ```
+
+3. Keep the terminal window open and visit **http://127.0.0.1:3210** in your browser.
+4. Open **Model and Writing Settings** from the lower-left corner. Enter your provider's Base URL, model ID, and API key, then click **Save and Test Connection**. This sends a small, real API request and may incur provider charges.
+5. Create a project or explore the sample novel, *Letters from the Sea of Fog*. Add a synopsis, outline, and characters, then start writing.
+
+**Access the application through the local server URL. Double-clicking `public/index.html` does not start the backend.** The original static prototype is separate from this application; neither overwrites the other.
+
+The sample content is provided to help you explore the interface. Generation buttons call your configured model API rather than returning built-in story responses.
+
+## Connecting a Model
+
+The application supports **Chat Completions-compatible APIs** that return text in `choices[0].message.content`. The Base URL can be either the API base path or the full endpoint ending in `/chat/completions`; the backend appends the endpoint path when needed.
+
+For example, you can use `https://api.deepseek.com` as the DeepSeek Base URL. Copy the model ID from your provider's current dashboard. See the [provider's official documentation](https://api-docs.deepseek.com/api/create-chat-completion/) for protocol details. Other compatible services require their own Base URL and model ID; complete parameter compatibility is not guaranteed across providers.
+
+A compatible local model server can use `http://127.0.0.1:PORT/v1`. Remote services require HTTPS. You can assign different models to outlining, writing, polishing, reviewing, and material generation. These assignments currently share one endpoint and one API key.
+
+If your API rejects the `temperature` parameter, disable it in settings. Only non-streaming text responses are supported. Provider-specific Messages/Responses protocols, multimodal input, tool calls, and dedicated reasoning-content fields are not supported.
+
+You can also set environment variables before starting the application:
+
+```powershell
+$env:AI_BASE_URL = 'https://your-provider-endpoint/v1'
+$env:AI_MODEL = 'your-model-id'
+$env:AI_API_KEY = 'your-api-key'
+npm start
+```
+
+Environment variables serve as fallback values when the corresponding database configuration is absent. If an API key is supplied through an environment variable, clearing the key in the interface may still leave that fallback active; remove it from the startup environment as well. Changing the endpoint without supplying a new key clears the saved key to prevent sending it to another provider.
+
+## Writing Workflow
+
+1. Use **Story Bookshelf** to create, switch, or import projects.
+2. Use **Story Outline** to maintain the synopsis, whole-book outline, and chapter outlines. Click **+** to create a chapter and specify its volume.
+3. Add characters, world settings, materials, and writing techniques. Select the items you want prioritized in model context.
+4. Write your manuscript and save with `Ctrl+S`, or use continuation, polishing, outlining, summarization, state extraction, reviewing, branching, and material inspiration.
+5. Review model output, then accept it, reject it, or save it as a draft. Polishing can replace the current chapter; continuation appends text. Outlines, summaries, states, and materials update their respective records.
+6. If automatic state maintenance is enabled, accepting manuscript text triggers one additional summarization call and one state-extraction call. This option is disabled by default. If maintenance fails, the accepted manuscript remains saved, and the interface identifies the unfinished tasks.
+7. Check call records for the actual model, usage, and lists of included, omitted, or truncated context. Billing usage is not fabricated when the provider does not return a `usage` field.
+8. Export a project as JSON, or export the whole book or a chapter as TXT. Project JSON excludes model settings, API keys, and chapter revision history. For a complete backup, stop the service and copy the entire `data` directory.
+
+If the manuscript changes after a candidate is generated, the acceptance operation refuses to overwrite the newer content. Keep the candidate as a draft and regenerate it if needed. Older candidates in the draft box remain subject to this check; you can manually copy any passages you wish to retain.
+
+Relationships are currently edited as JSON arrays. For example, use the UUID shown on the target character's page:
+
+```json
+[{"target_id":"target-character-uuid","label":"Old friends, cautious trust","status":"active","chapter_id":"associated-chapter-uuid"}]
+```
+
+If a relationship omits `chapter_id`, it uses the chapter selected on the character card. The relationship graph lets you view historical states by chapter.
+
+## Data Storage and Backups
+
+- `data/stories.sqlite`: Novel projects, reference records, call history, revisions, and encrypted configuration.
+- `data/master.key`: The local master key used to encrypt credentials. Keep it together with the database and do not upload it to a repository.
+- `data/stories.sqlite-wal` / `-shm`: SQLite auxiliary files used while the application is running.
+- API keys are encrypted with AES-256-GCM; the API only reports whether a key is configured. The master key is also stored locally. This is not an operating-system credential vault and does not protect against someone who can read your local files.
+- The service listens only on `127.0.0.1` and provides no login or multi-user permissions. Do not expose it directly to the public internet.
+
+Importing JSON creates a new project and regenerates UUIDs to avoid overwriting existing novels. Successful but unaccepted generations are restored as drafts; accepted, failed, and rejected records retain their statuses. JSON is not a complete database snapshot: it does not restore chapter revision history, provider configuration, or previously running tasks.
+
+## Troubleshooting
+
+- **Port already in use:** Stop the previous service, or run `$env:PORT='3211'; npm start` and visit the corresponding port.
+- **API 401 / 403:** Check your API key and permissions.
+- **API 404:** Check the Base URL and model ID.
+- **API 400:** Check the model's supported output length and disable `temperature` if necessary.
+- **API 429:** Check your provider quota and rate limits. The application does not retry automatically, to avoid duplicate charges.
+- **120-second timeout:** Check the provider's status before deciding whether to retry. Whether the original request is billed depends on the provider.
+- **Insufficient context budget:** Increase the budget, reduce the maximum output reservation, or split the chapter. The budget must not exceed the selected model's actual context window. Polishing, summarization, and state extraction will not silently truncate the full chapter.
+- **Invalid state JSON:** The original output and error remain in the call record. Revise the prompt or change models before retrying; invalid state data is not silently written to the database.
+- **SQLite experimental warning:** This warning comes from the built-in SQLite module in Node.js 24.14.1. It did not prevent startup during testing.
+
+## Testing
+
+```powershell
+npm test
+```
+
+Tests do not consume real model credits. They use isolated temporary databases and controlled model responses. Tests of the actual HTTP request handler do not bind a TCP port; browser rendering and real provider responses still require verification in the deployment environment. See `应用开发报告.md` (Application Development Report) and `TEST-RESULTS.txt` for details.
+
+## Project Structure
+
+```text
+story-studio/
+  start.cmd                   Windows startup script
+  server.mjs                  HTTP server, same-origin checks, and static page
+  public/index.html           Complete user interface
+  lib/store.mjs               SQLite storage, revisions, and credential settings
+  lib/service.mjs             Business workflows, AI acceptance, state maintenance, import/export
+  lib/context.mjs             Context retrieval, budgeting, and historical isolation
+  lib/provider.mjs            Third-party model protocol and error handling
+  lib/validate.mjs            Data validation
+  tests/                      Automated tests
+  应用开发报告.md             Requirements mapping, architecture, verification, and limitations
+  data/                       Created on first startup; excluded from the distribution package
+```

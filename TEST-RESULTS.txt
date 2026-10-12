@@ -1,0 +1,42 @@
+✔ budget invariant with multibyte text and huge retrieved data (15.729ms)
+✔ future chapters, events and entity current state cannot leak (0.3142ms)
+✔ story prompt injection is serialized data and never a system instruction (0.1715ms)
+✔ stale summary is omitted while correct content hash summary is used (0.2287ms)
+✔ explicit references survive before unselected retrieval (0.6136ms)
+✔ oversized mandatory prompt and invalid output budgets fail explicitly (0.3408ms)
+✔ whole-chapter tasks preserve complete input or fail rather than silently truncate (0.708ms)
+✔ recent history uses latest timestamps even when storage sends newest first (6.2855ms)
+✔ explicit user instruction is last and historical names cannot reveal future identity (0.2394ms)
+✔ frontend renders views, compiles inline handlers and escapes story HTML (65.8872ms)
+(node:41172) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ HTTP handler serves the actual page and JSON health endpoint (36.8191ms)
+✔ HTTP handler rejects remote origins, DNS rebinding host and invalid JSON (28.1918ms)
+✔ HTTP handler persists valid mutations and shields private files (25.0997ms)
+✔ compatible endpoint normalization and transport safety (0.708ms)
+✔ provider sends actual Chat Completions payload and parses output (16.032ms)
+✔ provider propagates failures without reflecting secrets (0.872ms)
+✔ temperature can be disabled and remote missing key fails before request (0.3513ms)
+(node:12508) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ generations require acceptance; acceptance is persisted and idempotent (34.5839ms)
+✔ reject and draft preserve prose; draft can be accepted later (22.8387ms)
+✔ stale generation cannot overwrite subsequent edits; revisions restore (26.2954ms)
+✔ keys encrypted on disk, omitted from snapshots/export and cleared on endpoint change (44.5077ms)
+✔ project records are isolated and malformed imports roll back (17.5121ms)
+✔ valid branches enter selection, malformed branches never alter the story (27.6058ms)
+✔ state extraction is validated and keeps historical snapshots on acceptance (19.6564ms)
+✔ auto memory failure reports warning while accepted text stays saved (28.807ms)
+✔ concurrent generation and edits are rejected until the request completes (16.9381ms)
+✔ database survives restart with settings and records (26.6823ms)
+✔ extract acceptance rejects newer manual state changes (23.8883ms)
+✔ editing earlier state keeps future current state and records historical snapshot (24.8134ms)
+✔ material generation accepts into library without changing prose and roundtrips run history (25.1139ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 461.6759
