@@ -21,6 +21,8 @@ A local, single-user AI platform for writing long-form fiction based on user nee
 
 The sample content is provided to help you explore the interface. Generation buttons call your configured model API rather than returning built-in story responses.
 
+![demo](web-demo2.png)
+
 ## Connecting a Model
 
 The application supports **Chat Completions-compatible APIs** that return text in `choices[0].message.content`. The Base URL can be either the API base path or the full endpoint ending in `/chat/completions`; the backend appends the endpoint path when needed.
